@@ -4,15 +4,17 @@
 
 Most people write CLAUDE.md like a handbook for a new employee — full sentences, markdown tables, repeated rules. But the only reader is an AI model. It doesn't need prose. It needs structure.
 
-Write your MD in AI's language. Get the same behavior with 87% fewer tokens.
+Write your MD in AI's language. Smaller files, cleaner signal, same rules.
 
 | What you get | Details |
 |-------------|---------|
 | 🔍 **Preview first** | See exactly how many tokens you're wasting — before changing anything |
-| ✅ **Same functionality** | Every rule is preserved. Nothing is deleted, only reformatted |
-| ⬆️ **Better AI compliance** | AI parses XML tags + key-value pairs more accurately than prose |
-| 💰 **87% fewer tokens** | ~250K tokens saved per 50-turn session |
+| ✅ **Core rules preserved** | All rules are kept. Review the diff to confirm nothing important was lost |
+| ⬆️ **Cleaner AI signal** | XML tags + key-value pairs reduce noise for the model's attention mechanism |
+| 💰 **~85% smaller files** | Measured in bytes. Actual token savings vary (prompt caching, language mix) |
 | ↩️ **One-click restore** | Don't like it? One command reverts everything |
+
+> ⚠️ **Honest note:** Compression can lose subtle rules. Always review the result and add back anything that was dropped. The skill saves size, but you own the final quality check.
 
 ## Why This Matters
 
@@ -38,7 +40,7 @@ Only change one thing at a time, verify immediately.
 EVIDENCE: no-fabricate no-guess unsure=say-so | all-claims-need-proof(data/line#/source) | one-change-then-verify
 ```
 
-43% fewer bytes. Same AI compliance. The model understands both equally — you're just paying less.
+43% fewer bytes. The model understands both — but always review the compressed version to make sure no rules were lost.
 
 ## Why AI-native format is better (not just cheaper)
 
