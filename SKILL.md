@@ -1,273 +1,188 @@
 ---
 name: md-for-ai
-version: 2.0.0
+version: 3.0.0
 description: >
-  Your CLAUDE.md is read by AI, not by you — so write it in AI's language.
-  Most people write CLAUDE.md as human prose. The AI doesn't need prose, it needs structure.
-  This skill rewrites your MD files into AI-native format (XML tags + telegraphic notation).
-  Same behavior, 87% fewer tokens. One session saves 250K+ tokens.
-  Run with: "distill my CLAUDE.md" or "rewrite my MD for AI" or "蒸餾"
+  Convert your CLAUDE.md from Markdown to AI-native XML format.
+  No content is deleted — just reformatted. Same rules, smaller file, cleaner signal.
+  Run with: "convert my CLAUDE.md to XML" or "rewrite my MD for AI" or "蒸餾"
 triggers:
   - user says "CLAUDE.md 太長" "太肥" "額度掉很快" "token 太多"
-  - user says "蒸餾" "distill" "壓縮 MD" "rewrite MD for AI" "md-for-ai"
+  - user says "蒸餾" "distill" "轉XML" "rewrite MD for AI" "convert to XML" "md-for-ai"
   - user notices quota draining fast
-  - CLAUDE.md + rules total > 10KB
-tags: [optimization, token-saving, system-prompt, ai-native, meta]
+  - CLAUDE.md + rules total > 5KB
+tags: [format-conversion, token-saving, system-prompt, ai-native, xml]
 ---
 
-# md-for-ai — Rewrite Your MD in AI's Language
+# md-for-ai — Convert Your MD to AI-Native XML
 
-## The Problem
+## What This Does
 
-Claude Code re-reads your `~/.claude/CLAUDE.md` + `~/.claude/rules/*.md` on **EVERY conversation turn**.
+Converts CLAUDE.md from Markdown format to XML format. **Format conversion only — no content is deleted.**
 
-```
-You type "hi"      → AI reads 20KB of instructions → responds
-You type "ok"      → AI reads 20KB of instructions AGAIN → responds
-...
-50 turns later     → AI has read 1MB of instructions total
-```
+| ✅ Does | ❌ Does NOT |
+|---------|------------|
+| `## Header` → `<section>` XML tag | Delete any rules |
+| Full sentences → key-value pairs | Merge or "compress" meaning |
+| "leads to", "or" → `→` `\|` symbols | Decide what's important for you |
+| Markdown tables → inline notation | Move files without asking |
 
-Most users write these files in human-readable prose.
-The AI doesn't need prose. It needs structure.
-You're paying tokens for readability that the AI doesn't benefit from.
+## Why Convert?
 
-## What Gets Audited
-
-| File | Loaded when | Priority |
-|------|------------|----------|
-| `~/.claude/CLAUDE.md` | Every turn | 🔴 Highest |
-| `~/.claude/rules/*.md` | Every turn | 🔴 High |
-| Project-level `CLAUDE.md` | Every turn (in project) | 🟡 Medium |
-| Skill trigger descriptions | Every turn | 🟢 Low |
-
-NOT audited (zero token cost): hooks/, ref/ files, settings.json
+Claude Code re-reads `~/.claude/CLAUDE.md` + `~/.claude/rules/*.md` on **every turn**.
+XML format is smaller than Markdown for the same content → fewer tokens per turn.
+Anthropic recommends XML tags for structuring prompts — Claude parses them with near-zero ambiguity.
 
 ---
 
 ## Two-Stage Workflow
 
-### Stage 1: PREVIEW — See the damage, don't touch anything
+### Stage 1: PREVIEW — Measure, don't touch
 
-**Goal: Show the user exactly how much they're burning, and what they'd save.**
+No files are modified. Read-only.
 
-No files are modified in this stage. Read-only.
-
-#### Step 1.1: Measure current burn
+#### Step 1.1: Measure current size
 
 ```bash
-echo "=== Current Token Burn Per Turn ==="
+echo "=== Current File Sizes ==="
 claude_md=$(wc -c < ~/.claude/CLAUDE.md 2>/dev/null || echo 0)
 rules=$(cat ~/.claude/rules/*.md 2>/dev/null | wc -c || echo 0)
 total=$((claude_md + rules))
-tokens=$((total / 4))
-echo ""
 echo "CLAUDE.md:     $claude_md bytes"
 echo "rules/*.md:    $rules bytes"
 echo "Total:         $total bytes"
-echo "≈ Tokens/turn: $tokens"
 echo ""
-echo "=== Projected Session Cost ==="
-echo "30-turn session:  $((tokens * 30)) tokens on system instructions"
-echo "50-turn session:  $((tokens * 50)) tokens on system instructions"
-echo "100-turn session: $((tokens * 100)) tokens on system instructions"
+echo "=== Projected After Format Conversion ==="
+projected=$((total * 45 / 100))
+echo "Projected:     ~$projected bytes (format change only)"
+echo "Savings:       ~55%"
 ```
 
-#### Step 1.2: Find redundancy
+#### Step 1.2: Show format comparison
 
-Read all auto-loaded files. Identify:
-
-1. **Duplicate concepts** — same rule stated in CLAUDE.md AND rules/ file
-2. **Restated principles** — same idea with different wording (count occurrences)
-3. **Hook-enforced rules** — rules that hooks already auto-enforce (100% waste as text)
-4. **Prose overhead** — full sentences where key-value pairs would suffice
-5. **Decorative formatting** — markdown tables, headers, dividers that add bytes
-
-Present findings as a table:
+Read the user's CLAUDE.md. For each section, show a before/after of the format change:
 
 ```
-| Concept | Times repeated | Files | Waste |
-|---------|---------------|-------|-------|
-| "Don't guess" | 4x | CLAUDE.md ×2, rules/debug.md, rules/socratic.md | 3x redundant |
-| "Backup before edit" | 3x | CLAUDE.md ×3 | 2x redundant |
-| ... | ... | ... | ... |
+Section: "## Communication Style"
+Before (Markdown, 342 bytes):
+  - **Talk in plain language.** No jargon. Use analogies (one is enough).
+  - **Keep options to 3 or fewer.**
+  ...
+
+After (XML, 156 bytes):
+  <user>
+  tone: plain-language no-jargon one-analogy-enough | options≤3
+  ...
+
+Savings: 54% (format only, same content)
 ```
 
-#### Step 1.3: Show projected savings
+Do this for 2-3 sections so the user can see the pattern.
 
-```
-=== Distillation Preview ===
+#### Step 1.3: Ask permission
 
-Current:    {total} bytes ≈ {tokens} tokens/turn
-Projected:  {compressed} bytes ≈ {new_tokens} tokens/turn
-Reduction:  {percent}%
-Per 50-turn session: saves {saved} tokens
-
-Functionality: UNCHANGED — all rules preserved, compressed format
-```
-
-**Stop here. Ask the user: "Want to proceed with distillation?"**
+**Stop. Ask the user: "Want to proceed with format conversion?"**
 
 Do NOT modify any files until the user confirms.
 
 ---
 
-### Stage 2: DISTILL — Compress with safety net
+### Stage 2: CONVERT — Reformat with backup
 
-**Only run after user confirms Stage 1 results.**
+**Only run after user confirms.**
 
-#### Step 2.1: Backup everything
-
-```bash
-cp ~/.claude/CLAUDE.md ~/.claude/CLAUDE.md.bak-pre-distill
-cp -r ~/.claude/rules ~/.claude/rules.bak-pre-distill
-```
-
-Tell the user: "Backed up. If you don't like the result, one command restores everything."
-
-#### Step 2.2: Compress to AI-native format
-
-**Format principles:**
-
-| Use this | Not this | Savings |
-|----------|----------|---------|
-| `<rules>` XML tags | `## Rules` markdown headers | Clearer parsing |
-| `key: value1 value2` | "Please remember to value1 and value2" | ~70% |
-| `→` `|` `≤` `=` symbols | "leads to" "or" "at most" "equals" | Single-token |
-| 5 compressed principles | 20 specific rules | Smart models derive specifics |
-| State once | State three ways | ÷3 |
-
-**Template structure:**
-
-```xml
-# TITLE | lang:xx | this-file=for-AI-parsing | optimize=results-over-format
-
-<user>
-identity, communication preferences, decision style
-</user>
-
-<rules>
-1. PRINCIPLE-NAME: compressed-rule | compressed-rule | compressed-rule
-2. PRINCIPLE-NAME: compressed-rule | compressed-rule
-...max 5-7 principles
-</rules>
-
-<rhythm>
-workflow patterns, what-triggers-what
-</rhythm>
-
-<conn>
-connection strings, credentials, tool shortcuts (keep exact, never compress facts)
-</conn>
-
-<ref label="on-demand Read only">
-file-path → when-to-read
-</ref>
-
-<learn>
-how the system gets smarter over time
-</learn>
-```
-
-#### Step 2.3: Create Tier 2 (on-demand ref/ files)
+#### Step 2.1: Backup
 
 ```bash
-mkdir -p ~/.claude/ref
+cp ~/.claude/CLAUDE.md ~/.claude/CLAUDE.md.bak-pre-convert
+[ -d ~/.claude/rules ] && cp -r ~/.claude/rules ~/.claude/rules.bak-pre-convert
 ```
 
-Move detailed content from CLAUDE.md and rules/ into ref/ files:
-- Detailed procedures → `ref/` (read only when that procedure is needed)
-- Past mistakes/lessons → `ref/lessons.md`
-- User preferences → `ref/profile.md` (grows over time)
-- Philosophy/principles → `ref/philosophy.md`
+Tell the user: "Backed up. Restore anytime with one command."
 
-These files are NOT auto-loaded. The AI reads them only when relevant.
+#### Step 2.2: Convert format
 
-#### Step 2.4: Empty the rules/ directory
+**Conversion rules (format only, no content changes):**
 
-Move rules/*.md → either compressed into Tier 1 CLAUDE.md, or into ref/.
+| Markdown | XML | Rule |
+|----------|-----|------|
+| `## Section Name` | `<section-name>` ... `</section-name>` | Headers become XML tags |
+| `- **Bold label:** explanation text` | `label: compressed-text` | List items become key-value |
+| "leads to", "results in" | `→` | Connecting words become symbols |
+| "or", "alternatively" | `\|` | |
+| "at most", "maximum" | `≤` | |
+| "equals", "is the same as" | `=` | |
+| Markdown table | Inline `key: val1 val2` | Tables become flat notation |
 
-```bash
-mkdir -p ~/.claude/rules-archived
-mv ~/.claude/rules/*.md ~/.claude/rules-archived/
-```
+**Critical: Never change facts, credentials, URLs, or numbers. Only change format.**
 
-#### Step 2.5: Verify
+#### Step 2.3: Side-by-side verification
 
-- [ ] Every behavioral rule from original → exists in distilled version
-- [ ] Credentials/connection strings → exact, not compressed
-- [ ] Hooks → still reference correct paths
-- [ ] ref/ files → contain the detailed content that was moved
-- [ ] Originals → backed up
-
-#### Step 2.6: Show results
+After conversion, show the user a side-by-side comparison:
 
 ```
-=== Distillation Complete ===
+Original rule: "Don't guess. Before editing any file, use Read/Grep to get line numbers."
+Converted:     "no-guess | Read/Grep→行號"
 
-Before: {old_total} bytes ≈ {old_tokens} tokens/turn
-After:  {new_total} bytes ≈ {new_tokens} tokens/turn
-Saved:  {percent}% reduction
-Per 50-turn session: {saved_total} fewer tokens
+✅ Same meaning    ❌ Meaning changed (flag this)
+```
 
-Backup: ~/.claude/CLAUDE.md.bak-pre-distill
-Restore: cp ~/.claude/CLAUDE.md.bak-pre-distill ~/.claude/CLAUDE.md && cp ~/.claude/rules.bak-pre-distill/* ~/.claude/rules/
+Walk through EVERY rule. The user confirms each one.
+
+#### Step 2.4: Show results
+
+```
+=== Conversion Complete ===
+
+Before: {old_total} bytes
+After:  {new_total} bytes
+Saved:  {percent}% (format conversion only)
+
+All rules preserved: {count} rules verified
+Backup: ~/.claude/CLAUDE.md.bak-pre-convert
+Restore: cp ~/.claude/CLAUDE.md.bak-pre-convert ~/.claude/CLAUDE.md
 ```
 
 ---
 
-## Compression Examples
+## Conversion Examples
 
-Before (human prose, 156 bytes):
-```
-**No Guessing Rule:** Don't guess. Before editing any file, use Read/Grep to get
-line numbers. Before saying "the problem is X", paste evidence first.
+Before (Markdown):
+```markdown
+## Rules
+
+### Rule 1: No Guessing
+Don't guess. Don't fabricate. If you're unsure, say so.
+Every claim needs proof — show me the data, line numbers, or source.
 Only change one thing at a time, verify immediately.
 ```
 
-After (AI-native, 91 bytes):
-```
-EVIDENCE: no-fabricate no-guess unsure=say-so | all-claims-need-proof(data/line#/source) | one-change-then-verify
-```
-
-43% fewer bytes. Same AI compliance.
-
----
-
-## The Learning Loop (optional)
-
-Add a `<learn>` section so the system gets wiser, not fatter:
-
+After (XML):
 ```xml
-<learn>
-new-preference → update profile.md
-3x-repeated-task → automate
-told-once → never-ask-again
-goal: rules→fewer rapport→deeper
-</learn>
+<rules>
+1. EVIDENCE: no-fabricate no-guess unsure=say-so | all-claims-need-proof(data/line#/source) | one-change-then-verify
+</rules>
 ```
 
-New lessons → absorbed into existing principles, not appended to CLAUDE.md.
+Same rules. Different format. 43% fewer bytes.
 
 ---
 
-## Anti-patterns
+## XML Tag Reference
 
-| Don't | Why |
-|-------|-----|
-| Write CLAUDE.md as human prose | Token waste |
-| Same rule in CLAUDE.md + rules/ | Paying double every turn |
-| Rarely-used info in always-loaded files | Paying for unused context |
-| 20+ rules | 5 compressed principles > 20 specific rules |
-| Describe hook behavior in text | Hooks auto-run, text is redundant |
-| Add rules without compressing | System grows fatter, not wiser |
+| Tag | Contains |
+|-----|----------|
+| `<user>` | Identity, communication preferences, decision style |
+| `<rules>` | Behavioral rules as numbered key-value principles |
+| `<rhythm>` | Workflow patterns, triggers, reminders |
+| `<conn>` | Connection strings, credentials, tools (never compress facts) |
+| `<ref>` | Pointers to other files (read on-demand) |
+| `<learn>` | How the system improves over time |
 
-## Expected Results
+---
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Auto-loaded size | 15-30 KB | 2-3 KB |
-| Tokens per turn | 4,000-8,000 | 500-800 |
-| 50-turn session waste | 200-400K tokens | 25-40K tokens |
-| Behavioral compliance | baseline | same or better |
-| Effective session capacity | 1x | ~2x |
+## Important Limits
+
+- **This is format conversion, not content optimization.** Don't delete, merge, or "improve" rules.
+- **Credentials and URLs must stay exact.** Never shorten a password or connection string.
+- **The user reviews every converted rule.** Don't skip verification.
+- **If unsure whether a conversion changes meaning, keep the original wording.**
