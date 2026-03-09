@@ -40,12 +40,23 @@ EVIDENCE: no-fabricate no-guess unsure=say-so | all-claims-need-proof(data/line#
 
 43% fewer bytes. Same AI compliance. The model understands both equally — you're just paying less.
 
-## The Key Insight
+## Why AI-native format is better (not just cheaper)
 
-> **CLAUDE.md is a config file for AI. Write it like one.**
->
-> You don't write nginx.conf in full sentences. Don't write CLAUDE.md that way either.
-> XML tags, key-value pairs, symbols (→ | ≤ =) — that's the AI's native language.
+| Human prose | AI-native format | Why AI-native wins |
+|-------------|-----------------|-------------------|
+| `## Rules` markdown header | `<rules>` XML tag | AI parses XML boundaries with near-zero ambiguity |
+| "Please remember to always back up before editing" | `backup→edit` | Zero filler words = less noise for attention mechanism |
+| Same rule written 4 different ways across 3 files | Stated once, compressed | Deduplication = no conflicting interpretations |
+| 20 specific rules | 5 compressed principles | Smart models derive specifics — over-specifying actually *constrains* them |
+| Rule described in text + enforced by hook | Hook only | Text is 100% redundant when hooks auto-enforce |
+
+The AI doesn't just tolerate compressed format — it **parses it more reliably**. XML tags create unambiguous boundaries. Key-value pairs eliminate filler words that dilute attention. And 5 principles give the model room to reason, instead of 20 rigid rules that conflict at the edges.
+
+**You're not just saving money. You're giving the AI a cleaner signal.**
+
+## Real-world example
+
+See [`examples/before.md`](examples/before.md) (human prose, 4,665 bytes) vs [`examples/after.md`](examples/after.md) (AI-native, 2,547 bytes). Same rules, same behavior — 45% smaller, cleaner signal.
 
 ## Format Cheatsheet
 
