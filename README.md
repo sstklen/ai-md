@@ -1,107 +1,170 @@
-# md-for-ai
+# AI.MD
 
-**Your CLAUDE.md is read by AI, not by you. Write it that way.**
+**Your CLAUDE.md is read by AI every single turn, not by you — so write it in AI's language.**
 
-This skill converts your CLAUDE.md from Markdown format to AI-native XML format. No content is deleted or "optimized" — just reformatted.
+AI.MD converts human-written `CLAUDE.md` into AI-native structured-label format.
+Not "compressed" — **restructured** so LLMs actually follow your rules better.
 
-| What you get | Details |
-|-------------|---------|
-| 🔄 **Format conversion only** | Same content, different format. Nothing is deleted or merged |
-| 🔍 **Preview first** | See the size difference before changing anything |
-| ⬆️ **Cleaner AI signal** | XML tags + key-value pairs = less noise for the model |
-| 💰 **Smaller files** | Format alone saves 40-60% in bytes |
-| ↩️ **One-click restore** | Don't like it? One command reverts everything |
-
-## What it does
-
-Converts this:
-```markdown
-## Rules
-
-### Rule 1: No Guessing
-Don't guess. Don't fabricate. If you're unsure, say so.
-Every claim needs proof — show me the data, line numbers, or source.
-Only change one thing at a time, verify immediately.
-```
-
-Into this:
-```xml
-<rules>
-EVIDENCE: no-fabricate no-guess unsure=say-so | all-claims-need-proof(data/line#/source) | one-change-then-verify
-</rules>
-```
-
-**Same rules. Different format. AI reads both equally — but the second one is smaller.**
-
-## What it does NOT do
-
-| ❌ Does NOT | Why |
-|-------------|-----|
-| Delete rules | Dangerous — you might lose something important |
-| Merge files | Your rules/ files stay intact unless you choose to move them |
-| "Optimize" content | Content decisions are yours, not the tool's |
-| Compress meaning | Every rule in the original appears in the output |
-
-## Why XML?
-
-| Human format | AI-native format | Why |
-|-------------|-----------------|-----|
-| `## Section Header` | `<section>` XML tag | Unambiguous boundaries for AI parsing |
-| "Please remember to always..." | `backup→edit` | Zero filler words = less noise |
-| Full sentences | `key: value1 value2` | Same meaning, fewer bytes |
-| "leads to", "or", "at most" | `→` `\|` `≤` | Single-token symbols |
-
-Anthropic's [official docs](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags) recommend XML tags for structuring prompts. Claude was trained on XML-heavy data.
-
-## Two-Stage Process
-
-### Stage 1: Preview (read-only)
-
-Measures your current file sizes and shows projected savings:
+## The Problem
 
 ```
-=== Current ===
-CLAUDE.md:     13,474 bytes
-rules/*.md:    10,004 bytes
-Total:         23,478 bytes
-
-=== After format conversion ===
-Projected:     ~9,000 bytes (format change only, no content removal)
-Savings:       ~60%
+You type "hi" → AI reads your CLAUDE.md → responds
+50 turns later → AI has re-read it 50 times
 ```
 
-You decide whether to proceed.
+Claude Code re-reads `CLAUDE.md` on **every conversation turn**. Most CLAUDE.md files are written in human prose — paragraphs, parenthetical explanations, long sentences with multiple rules crammed together.
 
-### Stage 2: Convert (with backup)
+This wastes tokens AND reduces compliance. We proved it.
 
-1. **Backs up** all original files
-2. **Converts** Markdown headers → XML tags
-3. **Converts** prose sentences → key-value pairs
-4. **Converts** connecting words → symbols (→ | ≤)
-5. **You review** the result and confirm nothing was lost
+## Battle-Tested Results
 
-## Real-world example
+Tested 2026-03 with real CLAUDE.md (washin-mura), 5 rounds, 4 models:
 
-See [`examples/before.md`](examples/before.md) (Markdown, 4,665 bytes) vs [`examples/after.md`](examples/after.md) (XML, 2,547 bytes).
+| Format | Codex (GPT-5.3) | Gemini 2.5 Pro | Claude Opus 4.6 |
+|--------|-----------------|----------------|-----------------|
+| Human prose (many rules) | 6/8 | 6.5/8 | 8/8 |
+| AI-native structured | **8/8** | **7/8** | **8/8** |
 
-Same rules, same behavior — 45% smaller from format change alone.
+**Same rules. Different format. Higher compliance across all models.**
+
+The uncomfortable finding: Adding more rules in prose **decreased** compliance (8/8 → 6/8).
+Converting to structured format **restored and exceeded** it (6/8 → 8/8).
+
+## What Makes It Work
+
+Three mechanisms explain why structured-label format outperforms prose:
+
+### 1. One Concept Per Line = Focused Attention
+
+LLMs don't "read" — they **attend**. When rules share a line, attention splits.
+When each rule has its own line, each gets full attention weight.
+
+```
+# BAD: 5 rules, 1 line — AI follows ~3
+EVIDENCE: no-fabricate no-guess | banned:應該是 | Read/Grep→行號 | "好像"→self-test | guess=shame-wall
+
+# GOOD: 5 rules, 5 lines — AI follows all 5
+EVIDENCE:
+  core: no-fabricate | no-guess | unsure=say-so
+  banned: 應該是/可能是 → 先拿數據
+  proof: all-claims-need(data/line#/source)
+  hear-doubt: "好像"/"覺得" → self-test → 禁反問user
+  violation: guess → shame-wall
+```
+
+### 2. Explicit Labels = Zero Inference
+
+Labels declare meaning. Prose requires the model to infer it.
+
+```
+# BAD: AI must infer what (防搞混) means
+GATE-1: 收到任務→先用一句話複述(防搞混)
+
+# GOOD: Labels tell AI exactly what each part does
+GATE-1 複述:
+  trigger: new-task
+  action: first-sentence="你要我做的是___"
+  exception: signal=處理一下 → skip
+```
+
+### 3. Semantic Anchoring = Direct Matching
+
+Labels act as matchable tags. When user says "add an API", the model matches it to `new-api:` directly — like a hash lookup instead of full-text search.
+
+```
+MOAT:
+  new-api: must check health-check.py coverage (GATE-5)
+```
+
+This specific technique fixed a test case that failed 5 consecutive times across all models.
 
 ## Install
 
 ```bash
-mkdir -p ~/.claude/skills/md-for-ai
-curl -o ~/.claude/skills/md-for-ai/SKILL.md \
-  https://raw.githubusercontent.com/sstklen/md-for-ai/main/SKILL.md
+mkdir -p ~/.claude/skills/ai-md
+curl -o ~/.claude/skills/ai-md/SKILL.md \
+  https://raw.githubusercontent.com/sstklen/ai-md/main/SKILL.md
 ```
 
 ## Usage
 
-In Claude Code, say:
-- `convert my CLAUDE.md to XML`
+In Claude Code, say any of:
+- `AI.MD` or `distill my CLAUDE.md`
 - `rewrite my MD for AI`
 - `蒸餾`
 
-Stage 1 (preview) runs first. You approve before anything changes.
+The skill runs in two stages:
+1. **Preview** — measures your current token burn, shows before/after examples
+2. **Distill** — converts with backup, tests with multiple models, reports scores
+
+## The Conversion Process
+
+The full methodology is in [`SKILL.md`](SKILL.md), but here's the summary:
+
+| Phase | What Happens |
+|-------|-------------|
+| **1. Understand** | Read like a compiler — identify triggers, actions, constraints, metadata, and deletable human explanations |
+| **2. Decompose** | Break every `\|` separator, `()` parenthetical, and "and/but" conjunction into atomic rules |
+| **3. Label** | Assign function labels: `trigger:` `action:` `exception:` `banned:` `policy:` etc. |
+| **4. Structure** | Organize into hierarchy: `<gates>` → `<rules>` → `<rhythm>` → `<conn>` → `<ref>` |
+| **5. Resolve** | Detect and resolve hidden conflicts between rules (priority, yields-to, not-triggered) |
+| **6. Test** | Validate with 2+ LLM models, 8 test questions, same pass/fail criteria |
+
+## Special Techniques
+
+| Technique | What It Does |
+|-----------|-------------|
+| **Bilingual labels** | English labels (shorter, universal) + native language output strings |
+| **State machine gates** | Each gate has trigger → action → exception → priority. Clear execution model. |
+| **XML section tags** | `<gates>` `<rules>` `<rhythm>` create hard boundaries, prevent rule-bleed |
+| **Cross-reference** | Single source of truth + `(GATE-5)` references instead of duplicates |
+| **"What Not Why"** | Delete all explanations of WHY a rule exists. AI needs WHAT, not WHY. |
+| **Not-triggered lists** | Explicit examples of when a rule should NOT fire. Prevents over-triggering. |
+| **Conflict detection** | Check every pair of gates for hidden conflicts. Add priority/yields-to. |
+
+## Template
+
+```xml
+# PROJECT-NAME | lang:xx | for-AI-parsing
+
+<user>
+identity, tone, signals, decision-style
+</user>
+
+<gates label="priority: gates>rules>rhythm">
+GATE-1 name:
+  trigger: ...
+  action: ...
+  exception: ...
+</gates>
+
+<rules>
+RULE-NAME:
+  core: ...
+  banned: ...
+  violation: ...
+</rules>
+
+<rhythm>
+workflow patterns as key: value
+</rhythm>
+
+<conn>
+connection strings (never compress facts)
+</conn>
+```
+
+## Examples
+
+See [`examples/before.md`](examples/before.md) and [`examples/after.md`](examples/after.md) for a real conversion.
+
+## Key Insight
+
+> **More rules in prose = worse compliance.**
+> **Same rules in structure = better compliance.**
+>
+> Your beautifully written CLAUDE.md might be hurting your AI's performance.
+> Structure > Prose. Always.
 
 ## License
 
