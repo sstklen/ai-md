@@ -30,6 +30,20 @@ Tested 2026-03 with real CLAUDE.md (washinmura.jp), 5 rounds, 4 models:
 The uncomfortable finding: Adding more rules in prose **decreased** compliance (8/8 → 6/8).
 Converting to structured format **restored and exceeded** it (6/8 → 8/8).
 
+### Size Reduction
+
+Same real-world CLAUDE.md, before and after conversion:
+
+| Metric | Before (prose) | After (AI-native) | Change |
+|--------|---------------|-------------------|--------|
+| File size | 13,474 bytes | 6,332 bytes | **-53%** |
+| Line count | 224 lines | 142 lines | **-37%** |
+
+Claude Code officially recommends keeping CLAUDE.md **under 200 lines** (re-read every turn).
+The original was **over the limit** (224). After AI.MD conversion: **well within** (142).
+
+Less tokens burned per turn × every turn × every session = compounding savings.
+
 ## What Makes It Work
 
 Three mechanisms explain why structured-label format outperforms prose:
