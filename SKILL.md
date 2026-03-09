@@ -505,7 +505,7 @@ how system evolves over time
 
 ## Real-World Results
 
-Tested 2026-03, washin-mura CLAUDE.md, 5 rounds, 4 models:
+Tested 2026-03, washinmura.jp CLAUDE.md, 5 rounds, 4 models:
 
 | Round | Change | Codex (GPT-5.3) | Gemini 2.5 Pro | Claude Opus 4.6 |
 |-------|--------|-----------------|----------------|-----------------|

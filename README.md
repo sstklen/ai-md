@@ -18,7 +18,7 @@ This wastes tokens AND reduces compliance. We proved it.
 
 ## Battle-Tested Results
 
-Tested 2026-03 with real CLAUDE.md (washin-mura), 5 rounds, 4 models:
+Tested 2026-03 with real CLAUDE.md (washinmura.jp), 5 rounds, 4 models:
 
 | Format | Codex (GPT-5.3) | Gemini 2.5 Pro | Claude Opus 4.6 |
 |--------|-----------------|----------------|-----------------|
