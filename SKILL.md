@@ -1,22 +1,21 @@
 ---
-name: prompt-distillery
-version: 1.1.0
+name: md-for-ai
+version: 2.0.0
 description: >
-  Your CLAUDE.md is burning your tokens. Every turn, every file in CLAUDE.md + rules/
-  is re-read by the AI — even if 80% of it is redundant prose the model already understood
-  the first time. This skill audits those files, finds redundancy, and compresses them into
-  AI-optimized format (XML tags + telegraphic notation). Typical result: 87% token reduction,
-  same behavioral compliance. One session saves 250K+ tokens.
-  Run with: "distill my CLAUDE.md" or "蒸餾" or "my tokens are burning too fast"
+  Your CLAUDE.md is read by AI, not by you — so write it in AI's language.
+  Most people write CLAUDE.md as human prose. The AI doesn't need prose, it needs structure.
+  This skill rewrites your MD files into AI-native format (XML tags + telegraphic notation).
+  Same behavior, 87% fewer tokens. One session saves 250K+ tokens.
+  Run with: "distill my CLAUDE.md" or "rewrite my MD for AI" or "蒸餾"
 triggers:
   - user says "CLAUDE.md 太長" "太肥" "額度掉很快" "token 太多"
-  - user says "蒸餾" "distill" "壓縮 MD" "optimize prompt" "compress my config"
+  - user says "蒸餾" "distill" "壓縮 MD" "rewrite MD for AI" "md-for-ai"
   - user notices quota draining fast
   - CLAUDE.md + rules total > 10KB
-tags: [optimization, token-saving, system-prompt, meta]
+tags: [optimization, token-saving, system-prompt, ai-native, meta]
 ---
 
-# Prompt Distillery — System Prompt Distillation
+# md-for-ai — Rewrite Your MD in AI's Language
 
 ## The Problem
 
