@@ -1,3 +1,5 @@
+[中文版](docs/README.zh.md) · [日本語版](docs/README.ja.md)
+
 # AI.MD
 
 **Your CLAUDE.md is read by AI every single turn, not by you — so write it in AI's language.**
