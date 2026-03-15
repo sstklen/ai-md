@@ -182,6 +182,11 @@ See [`examples/before.md`](examples/before.md) and [`examples/after.md`](example
 > Your beautifully written CLAUDE.md might be hurting your AI's performance.
 > Structure > Prose. Always.
 
+## Pair With
+
+- **YES.md** ([`sstklen/yes.md`](https://github.com/sstklen/yes.md)) — AI governance: safety gates, evidence rules, anti-slack detection. AI.MD formats the rules, YES.md enforces them.
+- **5x-cto** ([`sstklen/5x-cto`](https://github.com/sstklen/5x-cto)) — Full dev pipeline (requirements → spec → cards → build → review). Use AI.MD to optimize your project's CLAUDE.md, then 5x-cto to build.
+
 ## License
 
 MIT
